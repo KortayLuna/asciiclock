@@ -1,124 +1,42 @@
+from dataclasses import dataclass
+from datetime import datetime
 import time
 
-digits = [
-    [
-        "  ###  ",
-        " #   # ",
-        "#     #",
-        "#     #",
-        "#     #",
-        " #   # ",
-        "  ###  "
-    ],
-    [
-        "   #   ",
-        "  ##   ",
-        "   #   ",
-        "   #   ",
-        "   #   ",
-        "   #   ",
-        " ##### "
-    ],
-    [
-        "  ###  ",
-        " #   # ",
-        "     # ",
-        "    #  ",
-        "   #   ",
-        "  #    ",
-        " ######"
-    ],
-    [
-        "  ###  ",
-        " #   # ",
-        "     # ",
-        "   ##  ",
-        "     # ",
-        " #   # ",
-        "  ###  "
-    ],
-    [
-        "    #  ",
-        "   ##  ",
-        "  # #  ",
-        " #  #  ",
-        " ######",
-        "    #  ",
-        "    #  "
-    ],
-    [
-        " ######",
-        " #     ",
-        " #     ",
-        " ##### ",
-        "     # ",
-        " #   # ",
-        "  ###  "
-    ],
-    [
-        "  ###  ",
-        " #   # ",
-        " #     ",
-        " ####  ",
-        " #   # ",
-        " #   # ",
-        "  ###  "
-    ],
-    [
-        " ######",
-        "     # ",
-        "    #  ",
-        "   #   ",
-        "  #    ",
-        " #     ",
-        " #     "
-    ],
-    [
-        "  ###  ",
-        " #   # ",
-        " #   # ",
-        "  ###  ",
-        " #   # ",
-        " #   # ",
-        "  ###  "
-    ],
-    [
-        "  ###  ",
-        " #   # ",
-        " #   # ",
-        "  #### ",
-        "     # ",
-        " #   # ",
-        "  ###  "
-    ]
-]
 
-def get_ascii_digit(number):
-    return digits[number]
+@dataclass
+class AsciiClock:
+    time: int
 
-def get_ascii_clock(hour, minute, second):
-    time_str = f"{hour}:{minute}:{second}"
+    _charset = (
+        ("#####", "#   #", "#   #", "#   #", "#####"),
+        ("  #  ", "###  ", "  #  ", "  #  ", "#####"),
+        ("#####", "    #", "#####", "#    ", "#####"),
+        ("#####", "    #", "#####", "    #", "#####"),
+        ("#   #", "#   #", "#####", "    #", "    #"),
+        ("#####", "#    ", "#####", "    #", "#####"),
+        ("#####", "#    ", "#####", "#   #", "#####"),
+        ("#####", "    #", "    #", "   # ", "  #  "),
+        ("#####", "#   #", "#####", "#   #", "#####"),
+        ("#####", "#   #", "#####", "    #", "#####"),
+        (" ", "#", " ", "#", " "),
+    )
 
-    ascii_digits = [get_ascii_digit(int(digit)) for digit in time_str if digit != ':']
+    def __str__(self):
+        digits = [int(x) for x in format(self.time % 1000000, "04d")] #added 2 zeros to add seconds
+        digits.insert(2, 10)#only idea I have about this line is that it just add ":"
+        digits.insert(5, 10)#so I copied it                         
+        digits = [self._charset[x] for x in digits]
 
-    clock = [" "]*7
-
-    for row in range(7):
-        for digit_ascii in ascii_digits:
-            clock[row] += digit_ascii[row] + " "
-    return "\n".join(clock)
-
-def main():
-    while True:
-        cTime = time.localtime()
-        hour = cTime.tm_hour
-        minute = cTime.tm_min
-        second = cTime.tm_sec
-
-        clock_ascii = get_ascii_clock(hour, minute, second)
-        print(clock_ascii)
-        time.sleep(1)
+        return "\n".join(" ".join(l) for l in zip(*digits))
 
 
-if __name__ == "__main__":
-    main()
+c = AsciiClock(1234)
+print(c)
+
+while True:
+    time.sleep(1.0)
+
+    t = datetime.now()
+    c.time = t.hour * 10000 + t.minute * 100 + t.second # I don't know why we add 10000 100 etc
+
+    print("\033[5A", c, sep="")
